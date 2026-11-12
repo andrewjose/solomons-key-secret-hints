@@ -1,0 +1,53 @@
+# Solomon's Key — Secret Hints (NES)
+
+A small ROM hack for **Solomon's Key (USA)** that puts an **X** on every tile hiding a secret, so you can find hidden items without a guide.
+
+![Preview](docs/preview.png)
+
+## What gets marked
+
+- **Items inside brown blocks**: bonus items, jars, hidden zodiac signs, keys hidden in blocks.
+- **Empty cells where you must create and then destroy a block**: hidden bells, fairies, keys and **Solomon's Seals**.
+- **Bomb Jack's block** (hit 11 times) in rounds 17 and 40.
+
+The markers come from the game's own room data as each room is drawn, not from a hard-coded list. So they always match what the game will actually reveal:
+
+- Seals only show when the seal will really appear (that is, you haven't broken the seal chain).
+- Chained hidden bonus items stop being marked once you've missed one, because the game stops placing them.
+- Bomb Jack is only marked when the game's own condition for him is met.
+
+Breaking a marked block or making a block on a marked cell redraws the tile normally, and the X goes away.
+
+## Applying
+
+Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.js to a **headered** `Solomon's Key (USA).nes` (iNES, 65,552 bytes).
+
+| | CRC32 (without header) |
+|---|---|
+| Patched PRG+CHR | `3B38C80B` |
+
+## How it works
+
+- The room bulk-draw routine at `$9661` calls `$9E21` to build each 16×16 cell's tile buffer. The patch redirects that call (`$96A6`) to a 58-byte routine placed in unused PRG space at `$B500`.
+- The routine reads the cell from the room map (`$0304 + pos`):
+  - `$40–$7F`: hidden item revealed by make-and-break.
+  - `$80–$F7` with low 6 bits ≠ `$10`: brown block containing an item.
+  - Bomb Jack cells: level `$10` pos `$7E`, level `$27` pos `$56`, gated on `$7C & $10` like the game's own scripts.
+- For a marked cell, it swaps the cell's top-left tile for the existing `X` glyph (tile `$98`).
+- No CHR data is modified.
+
+## Tools
+
+`tools/` holds the Python scripts used for research and building:
+
+- `build.py`: assembles the hook and writes a patched ROM (needs `py65`). Usage: `python build.py out.nes "Solomon's Key (USA).nes"`
+- `ips.py`: makes an IPS from the original and patched ROMs.
+- `parse.py`: dumps per-level item data.
+- `d65.py`: quick 6502 disassembler.
+- `emu.py`, `boot.py`, `survey.py`, `shots.py`: headless testing with `cynes`. These have some hard-coded paths you'll need to adjust.
+
+No ROM data is included in this repository.
+
+## Credits
+
+Item and level data layout comes from Kai E. Frøland's *Solomon's Key ROM map* (romhacking.net).
