@@ -4,6 +4,8 @@ A small ROM hack for **Solomon's Key (USA)** that puts a small, subtle **ring** 
 
 ![Preview](docs/preview.png)
 
+> **Help wanted: playtesting.** This needs more people playing it. If you find a bug, crash or anything that looks wrong, please [open an issue on GitHub](https://github.com/andrewjose/solomons-key-secret-hints/issues) and include the round number, your emulator or flash cart, and a screenshot if a ring is missing or on the wrong tile.
+
 ## Turning it on
 
 The hints are **off by default**. On the title screen, enter the Konami code:
@@ -26,9 +28,13 @@ The markers come from the game's own room data as each room is drawn, not from a
 
 Breaking a marked block or making a block on a marked cell redraws the tile normally, and the ring goes away.
 
-## Applying
+## How to install and play
 
-Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.js to a **headered** `Solomon's Key (USA).nes` (iNES, 65,552 bytes).
+1. Get your own **headered** `Solomon's Key (USA).nes` (iNES, 65,552 bytes). This repo doesn't provide one.
+2. Download [`patch/Solomons_Key_Secret_Hints.ips`](patch/Solomons_Key_Secret_Hints.ips).
+3. Apply it with [Rom Patcher JS](https://www.marcrobledo.com/RomPatcher.js/) (in your browser), [Flips](https://github.com/Alcaro/Flips) or Lunar IPS. Patch a copy, not your only ROM.
+4. Optionally check the result against the CRC32 below.
+5. Play in any NES emulator (Mesen, FCEUX, Nestopia, RetroArch) or on a flash cart. On the title screen, enter the Konami code (see [Turning it on](#turning-it-on)) and press Start.
 
 | | CRC32 (without header) |
 |---|---|
