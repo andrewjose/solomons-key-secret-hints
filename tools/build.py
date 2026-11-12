@@ -1,7 +1,9 @@
-import sys
+import sys,os
+sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
+BGC=int(os.environ.get('BGC','2')); BLKC=int(os.environ.get('BLKC','1'))
 from py65.devices.mpu6502 import MPU
 from py65.assembler import Assembler
-SRC=sys.argv[2] if len(sys.argv)>2 else "Solomon's Key (USA).nes"
+SRC="/home/claude/rom/Solomon's Key (USA).nes"
 rom=bytearray(open(SRC,'rb').read())
 def f(a): return a-0x8000+0x10
 mpu=MPU(); asm=Assembler(mpu)
@@ -36,12 +38,20 @@ hook:
  CMP #$40
  BCC chkbj
  CMP #$80
- BCC mark
+ BCC markbg
  AND #$3F
  CMP #$10
  BEQ chkbj
+ BNE mark
+markbg:
+ LDA #$98
+ BNE store
 mark:
- LDA #${MARK:02X}
+ LDA #$25
+ BNE store
+markw:
+ LDA #$27
+store:
  STA $03E9
  RTS
 chkbj:
@@ -52,14 +62,21 @@ chkbj:
  CMP #$10
  BNE nxt
  CPX #$7E
- BEQ mark
+ BEQ bj
 nxt:
  CMP #$27
  BNE done
  CPX #$56
- BEQ mark
+ BEQ bj
 done:
  RTS
+bj:
+ LDA $0304,X
+ CMP #$F8
+ BCS markw
+ CMP #$80
+ BCS mark
+ BCC markbg
 """.splitlines())
 assert all(b in (0,0xff) for b in rom[f(HOOK):f(HOOK)+len(code)])
 rom[f(HOOK):f(HOOK)+len(code)]=code
@@ -67,4 +84,10 @@ rom[f(HOOK):f(HOOK)+len(code)]=code
 assert rom[f(0x96A6):f(0x96A6)+3]==bytes([0x20,0x21,0x9E])
 rom[f(0x96A6)+1:f(0x96A6)+3]=bytes([HOOK&0xff,HOOK>>8])
 out=sys.argv[1] if len(sys.argv)>1 else '/home/claude/work/sk_hints.nes'
+import ring
+ring.apply(rom,BGC,BLKC)
+WHC=1
+for bank in range(3):
+    chr_=bytearray(rom[16+0x8000:])
+    ring.put(chr_,bank,0x27,ring.ringify(ring.get(chr_,bank,0x84),WHC)); rom[16+0x8000:]=chr_
 open(out,'wb').write(rom); print(code.hex(' '), labels)

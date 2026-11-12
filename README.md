@@ -1,6 +1,6 @@
 # Solomon's Key — Secret Hints (NES)
 
-A small ROM hack for **Solomon's Key (USA)** that puts an **X** on every tile hiding a secret, so you can find hidden items without a guide.
+A small ROM hack for **Solomon's Key (USA)** that puts a small, subtle **ring** on every tile hiding a secret, so you can find hidden items without a guide.
 
 ![Preview](docs/preview.png)
 
@@ -16,7 +16,7 @@ The markers come from the game's own room data as each room is drawn, not from a
 - Chained hidden bonus items stop being marked once you've missed one, because the game stops placing them.
 - Bomb Jack is only marked when the game's own condition for him is met.
 
-Breaking a marked block or making a block on a marked cell redraws the tile normally, and the X goes away.
+Breaking a marked block or making a block on a marked cell redraws the tile normally, and the ring goes away.
 
 ## Applying
 
@@ -24,23 +24,27 @@ Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.
 
 | | CRC32 (without header) |
 |---|---|
-| Patched PRG+CHR | `3B38C80B` |
+| Patched PRG+CHR | `C405119F` |
 
 ## How it works
 
-- The room bulk-draw routine at `$9661` calls `$9E21` to build each 16×16 cell's tile buffer. The patch redirects that call (`$96A6`) to a 58-byte routine placed in unused PRG space at `$B500`.
+- The room bulk-draw routine at `$9661` calls `$9E21` to build each 16×16 cell's tile buffer. The patch redirects that call (`$96A6`) to a small routine placed in unused PRG space at `$B500`.
 - The routine reads the cell from the room map (`$0304 + pos`):
   - `$40–$7F`: hidden item revealed by make-and-break.
   - `$80–$F7` with low 6 bits ≠ `$10`: brown block containing an item.
   - Bomb Jack cells: level `$10` pos `$7E`, level `$27` pos `$56`, gated on `$7C & $10` like the game's own scripts.
-- For a marked cell, it swaps the cell's top-left tile for the existing `X` glyph (tile `$98`).
-- No CHR data is modified.
+- For a marked cell, it swaps the cell's top-left tile for a ring-marked copy of that tile. The ring sits near the cell's center and leaves the rest of the tile intact.
+- The ring tiles are drawn into three BG tiles that are unused during gameplay, in CHR banks 0–2:
+  - `$98`: background bricks with a gray ring.
+  - `$25`: brown block with a dark ring.
+  - `$27`: white block with a dark ring (used for Bomb Jack in round 17).
 
 ## Tools
 
 `tools/` holds the Python scripts used for research and building:
 
 - `build.py`: assembles the hook and writes a patched ROM (needs `py65`). Usage: `python build.py out.nes "Solomon's Key (USA).nes"`
+- `ring.py`: generates the ring-marked CHR tiles. Ring colors can be changed with the `BGC` and `BLKC` environment variables (palette index 0–3).
 - `ips.py`: makes an IPS from the original and patched ROMs.
 - `parse.py`: dumps per-level item data.
 - `d65.py`: quick 6502 disassembler.
