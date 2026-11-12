@@ -34,6 +34,27 @@ Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.
 |---|---|
 | Patched PRG+CHR | `944491BA` |
 
+## Building from source
+
+Needs Python 3 and your own headered `Solomon's Key (USA).nes` (no ROM data is included here).
+
+```
+git clone https://github.com/andrewjose/solomons-key-secret-hints
+cd solomons-key-secret-hints
+pip install -r requirements.txt        # py65 builds; cynes, numpy, Pillow are only for the test tools
+
+# 1. assemble the hack into a patched ROM
+python tools/build.py sk_hints.nes "path/to/Solomon's Key (USA).nes"
+
+# 2. check it: should print 944491BA (CRC32 of PRG+CHR, the 16-byte header skipped)
+python -c "import zlib,sys; print('%08X' % zlib.crc32(open(sys.argv[1],'rb').read()[16:]))" sk_hints.nes
+
+# 3. make an IPS from the original and the patched ROM
+python tools/ips.py "path/to/Solomon's Key (USA).nes" sk_hints.nes Solomons_Key_Secret_Hints.ips
+```
+
+The ring colors can be changed with the `BGC` and `BLKC` environment variables (palette index 0–3) when running `build.py`; the CRC above is for the defaults.
+
 ## How it works
 
 - The room bulk-draw routine at `$9661` calls `$9E21` to build each 16×16 cell's tile buffer. The patch redirects that call (`$96A6`) to a small routine placed in unused PRG space at `$B500`.
