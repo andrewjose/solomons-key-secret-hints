@@ -4,6 +4,14 @@ A small ROM hack for **Solomon's Key (USA)** that puts a small, subtle **ring** 
 
 ![Preview](docs/preview.png)
 
+## Turning it on
+
+The hints are **off by default**. On the title screen, enter the Konami code:
+
+**↑ ↑ ↓ ↓ ← → ← → B A**
+
+You'll hear a confirmation sound. Then press Start to play with the hints on. They stay on until you reset or power off.
+
 ## What gets marked
 
 - **Items inside brown blocks**: bonus items, jars, hidden zodiac signs, keys hidden in blocks.
@@ -24,7 +32,7 @@ Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.
 
 | | CRC32 (without header) |
 |---|---|
-| Patched PRG+CHR | `C405119F` |
+| Patched PRG+CHR | `944491BA` |
 
 ## How it works
 
@@ -38,6 +46,13 @@ Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.
   - `$98`: background bricks with a gray ring.
   - `$25`: brown block with a dark ring.
   - `$27`: white block with a dark ring (used for Bomb Jack in round 17).
+
+### Konami code toggle
+
+- The NMI's controller-read call (`$80D2`) is redirected to a detector that runs only while the title screen's CHR bank (bank 3) is active.
+- The NMI's CHR bank switch (`$8051`) is hooked to record the current bank in `$07E3`.
+- The detector watches newly pressed buttons on `$82`, tracks progress in `$07E1`, sets the enable flag `$07E0` and plays sound `$18`.
+- The marker routine does nothing unless `$07E0` is set. These RAM bytes are unused by the game and are cleared on reset.
 
 ## Tools
 

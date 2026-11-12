@@ -31,6 +31,8 @@ HOOK=0xB500
 code,labels=assemble(HOOK,f"""
 hook:
  JSR $9E21
+ LDA $07E0
+ BEQ done
  LDX $00
  LDA $0304,X
  CMP #$F8
@@ -78,7 +80,60 @@ bj:
  BCS mark
  BCC markbg
 """.splitlines())
+KON=HOOK+len(code)
+kcode,kl=assemble(KON,'''
+konami:
+ JSR $837D
+ LDA $07E3
+ CMP #$03
+ BNE kout
+ LDA $82
+ TAY
+ EOR $07E2
+ AND $82
+ STY $07E2
+ BEQ kout
+ LDX $07E1
+ CMP kseq,X
+ BEQ kadv
+ CMP #$08
+ BNE kzero
+ CPX #$02
+ BEQ kset
+ LDX #$01
+ BNE kset
+kzero:
+ LDX #$00
+ BEQ kset
+kadv:
+ INX
+ CPX #$0A
+ BNE kset
+ LDA #$01
+ STA $07E0
+ LDY #$18
+ JSR $8E8D
+ LDX #$00
+kset:
+ STX $07E1
+kout:
+ RTS
+bankhook:
+ STX $07E3
+ LDA #$80
+ STA $7D
+ RTS
+kseq:
+ .byte 08,08,04,04,02,01,02,01,40,80
+'''.splitlines())
+code=code+kcode
 assert all(b in (0,0xff) for b in rom[f(HOOK):f(HOOK)+len(code)])
+# controller read in NMI -> konami detector
+assert rom[f(0x80D2):f(0x80D2)+3]==bytes([0x20,0x7D,0x83])
+rom[f(0x80D2)+1:f(0x80D2)+3]=bytes([kl['konami']&0xff,kl['konami']>>8])
+# NMI CHR bank switch: 'LDA #$80 / STA $7D' -> JSR bankhook / NOP
+assert rom[f(0x8051):f(0x8051)+4]==bytes([0xA9,0x80,0x85,0x7D])
+rom[f(0x8051):f(0x8051)+4]=bytes([0x20,kl['bankhook']&0xff,kl['bankhook']>>8,0xEA])
 rom[f(HOOK):f(HOOK)+len(code)]=code
 # redirect bulk drawer JSR $9E21 at $96A6
 assert rom[f(0x96A6):f(0x96A6)+3]==bytes([0x20,0x21,0x9E])
