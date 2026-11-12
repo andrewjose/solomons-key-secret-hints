@@ -1,4 +1,4 @@
-import sys; sys.path.insert(0,'/home/claude/work')
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from survey import boot_level
 from PIL import Image
 src=open(sys.argv[1],'rb').read(); Ls=[int(x) for x in sys.argv[3].split(',')]

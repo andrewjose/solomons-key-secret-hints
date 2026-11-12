@@ -3,7 +3,9 @@ sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 BGC=int(os.environ.get('BGC','2')); BLKC=int(os.environ.get('BLKC','1'))
 from py65.devices.mpu6502 import MPU
 from py65.assembler import Assembler
-SRC="/home/claude/rom/Solomon's Key (USA).nes"
+if len(sys.argv)<2:
+    sys.exit('usage: python build.py out.nes ["Solomon\'s Key (USA).nes"]')
+SRC=sys.argv[2] if len(sys.argv)>2 else "Solomon's Key (USA).nes"
 rom=bytearray(open(SRC,'rb').read())
 def f(a): return a-0x8000+0x10
 mpu=MPU(); asm=Assembler(mpu)
@@ -138,7 +140,7 @@ rom[f(HOOK):f(HOOK)+len(code)]=code
 # redirect bulk drawer JSR $9E21 at $96A6
 assert rom[f(0x96A6):f(0x96A6)+3]==bytes([0x20,0x21,0x9E])
 rom[f(0x96A6)+1:f(0x96A6)+3]=bytes([HOOK&0xff,HOOK>>8])
-out=sys.argv[1] if len(sys.argv)>1 else '/home/claude/work/sk_hints.nes'
+out=sys.argv[1]
 import ring
 ring.apply(rom,BGC,BLKC)
 WHC=1

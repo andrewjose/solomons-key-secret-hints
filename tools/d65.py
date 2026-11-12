@@ -1,7 +1,7 @@
 import sys
 from py65.devices.mpu6502 import MPU
 from py65.disassembler import Disassembler
-rom=open("/home/claude/rom/Solomon's Key (USA).nes",'rb').read()
+rom=open(sys.argv[1] if len(sys.argv)>1 else "Solomon's Key (USA).nes",'rb').read()
 prg=rom[16:16+0x8000]
 m=MPU()
 for i,b in enumerate(prg): m.memory[0x8000+i]=b

@@ -1,4 +1,4 @@
-import sys; sys.path.insert(0,'/home/claude/work')
+import sys,os; sys.path.insert(0,os.path.dirname(os.path.abspath(__file__)))
 from emu import *
 def boot(path, level=None):
     e=Emu(path); e.run(120); e.tap(NES_INPUT_START); e.run(200)

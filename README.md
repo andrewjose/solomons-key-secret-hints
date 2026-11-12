@@ -56,14 +56,14 @@ Apply `patch/Solomons_Key_Secret_Hints.ips` with Flips, Lunar IPS or RomPatcher.
 
 ## Tools
 
-`tools/` holds the Python scripts used for research and building:
+`tools/` holds the Python scripts used for research and building (`pip install -r requirements.txt`):
 
-- `build.py`: assembles the hook and writes a patched ROM (needs `py65`). Usage: `python build.py out.nes "Solomon's Key (USA).nes"`
+- `build.py`: assembles the hook and writes a patched ROM (needs `py65`). Usage: `python tools/build.py out.nes "Solomon's Key (USA).nes"` (the ROM argument defaults to that file name in the current folder).
 - `ring.py`: generates the ring-marked CHR tiles. Ring colors can be changed with the `BGC` and `BLKC` environment variables (palette index 0–3).
-- `ips.py`: makes an IPS from the original and patched ROMs.
+- `ips.py`: makes an IPS from the original and patched ROMs: `python tools/ips.py original.nes patched.nes out.ips`.
 - `parse.py`: dumps per-level item data.
-- `d65.py`: quick 6502 disassembler.
-- `emu.py`, `boot.py`, `survey.py`, `shots.py`: headless testing with `cynes`. These have some hard-coded paths you'll need to adjust.
+- `d65.py`: quick 6502 disassembler (takes the ROM path as its argument).
+- `emu.py`, `boot.py`, `survey.py`, `shots.py`: headless testing with `cynes` (plus `numpy` and `Pillow`). `survey.py` takes the ROM path; `shots.py` takes `patched.nes out.png 1,2,3` (round numbers). Scratch files go to the system temp folder.
 
 No ROM data is included in this repository.
 
