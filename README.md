@@ -61,25 +61,15 @@ python tools/ips.py "path/to/Solomon's Key (USA).nes" sk_hints.nes Solomons_Key_
 
 The ring colors can be changed with the `BGC` and `BLKC` environment variables (palette index 0–3) when running `build.py`; the CRC above is for the defaults.
 
-## How it works
+## Documentation
 
-- The room bulk-draw routine at `$9661` calls `$9E21` to build each 16×16 cell's tile buffer. The patch redirects that call (`$96A6`) to a small routine placed in unused PRG space at `$B500`.
-- The routine reads the cell from the room map (`$0304 + pos`):
-  - `$40–$7F`: hidden item revealed by make-and-break.
-  - `$80–$F7` with low 6 bits ≠ `$10`: brown block containing an item.
-  - Bomb Jack cells: level `$10` pos `$7E`, level `$27` pos `$56`, gated on `$7C & $10` like the game's own scripts.
-- For a marked cell, it swaps the cell's top-left tile for a ring-marked copy of that tile. The ring sits near the cell's center and leaves the rest of the tile intact.
-- The ring tiles are drawn into three BG tiles that are unused during gameplay, in CHR banks 0–2:
-  - `$98`: background bricks with a gray ring.
-  - `$25`: brown block with a dark ring.
-  - `$27`: white block with a dark ring (used for Bomb Jack in round 17).
+- [docs/1-overview.md](docs/1-overview.md): what the hack does, for players
+- [docs/2-engineering.md](docs/2-engineering.md): how it works, for software engineers new to ROM hacking
+- [docs/3-technical.md](docs/3-technical.md): addresses, cell byte classes, annotated routines, CHR edits and testing, for ROM hackers
 
-### Konami code toggle
+## How it works (short version)
 
-- The NMI's controller-read call (`$80D2`) is redirected to a detector that runs only while the title screen's CHR bank (bank 3) is active.
-- The NMI's CHR bank switch (`$8051`) is hooked to record the current bank in `$07E3`.
-- The detector watches newly pressed buttons on `$82`, tracks progress in `$07E1`, sets the enable flag `$07E0` and plays sound `$18`.
-- The marker routine does nothing unless `$07E0` is set. These RAM bytes are unused by the game and are cleared on reset.
+The room drawer's per-cell tile call (`$96A6`) is redirected to a routine at `$B500`. For each cell, the routine reads the game's room map and swaps the cell's top-left tile for a ring-marked copy when the cell hides something. A Konami-code detector hooked into the NMI's controller read sets the enable flag. Full details: [docs/3-technical.md](docs/3-technical.md).
 
 ## Tools
 
